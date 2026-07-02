@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Husn-e-Kashmir | Pashmina Draper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Cinzel:wght@500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --maroon: #6B1426;
+    --maroon-dark: #4a0e1a;
+    --gold: #C9A227;
+    --cream: #FBF3E7;
+    --ink: #2A1810;
+    --green: #0D4F3C;
+    --error: #B23A5C;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:'Poppins',sans-serif; background:var(--cream); color:var(--ink); }
+  .font-display { font-family:'Cormorant Garamond',serif; }
+  .font-brand { font-family:'Cinzel',serif; letter-spacing:.12em; }
+  header { position:sticky; top:0; z-index:30; background:var(--cream); border-bottom:1px solid #E8CD7A; }
+  .header-inner { max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:16px 20px; }
+  .brand-btn { background:none; border:none; font-size:22px; color:var(--maroon); cursor:pointer; user-select:none; }
+  .cart-btn { position:relative; display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:999px; background:var(--maroon); color:var(--cream); border:none; cursor:pointer; font-size:14px; }
+  .cart-badge { position:absolute; top:-8px; right:-8px; background:var(--gold); color:var(--ink); font-size:11px; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .hero { padding:56px 20px 40px; text-align:center; background:linear-gradient(180deg, var(--maroon) 0%, #8B1A3A 100%); color:var(--cream); }
+  .hero p.eyebrow { font-family:'Cinzel',serif; font-size:11px; letter-spacing:.2em; opacity:.8; margin-bottom:12px; }
+  .hero h1 { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:44px; margin:0 0 16px; }
+  .hero p.desc { max-width:480px; margin:0 auto; font-size:14px; opacity:.9; }
+  .divider { height:14px; background-image:radial-gradient(circle at 7px 7px, var(--gold) 3px, transparent 3.5px); background-size:14px 14px; background-position:center; opacity:.85; }
+  .categories { max-width:1100px; margin:0 auto; padding:24px 20px 0; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  .cat-btn { padding:6px 16px; border-radius:999px; font-size:14px; cursor:pointer; background:transparent; color:var(--maroon); border:1px solid var(--gold); }
+  .cat-btn.active { background:var(--maroon); color:var(--cream); border-color:var(--maroon); }
+  .grid { max-width:1100px; margin:0 auto; padding:32px 20px; display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:24px; }
+  .card { border-radius:10px; overflow:hidden; background:#fff; border:1px solid var(--gold); display:flex; flex-direction:column; }
+  .swatch { height:220px; width:100%; position:relative; overflow:hidden; cursor:pointer; }
+  .swatch img { width:100%; height:100%; object-fit:contain; background:#f2e7d6; }
+  .swatch-dots { position:absolute; bottom:8px; left:0; right:0; display:flex; justify-content:center; gap:5px; }
+  .swatch-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.6); border:1px solid rgba(0,0,0,.2); }
+  .swatch-dot.active { background:var(--gold); }
+  .card-body { padding:16px; display:flex; flex-direction:column; gap:4px; flex:1; }
+  .card-top { display:flex; align-items:center; justify-content:space-between; }
+  .card-top h3 { font-family:'Cormorant Garamond',serif; font-size:20px; margin:0; }
+  .rating { display:flex; align-items:center; gap:3px; font-size:12px; color:var(--gold); }
+  .meta { font-size:12px; opacity:.6; margin:0; }
+  .card-bottom { margin-top:auto; display:flex; align-items:center; justify-content:space-between; padding-top:12px; }
+  .price { font-weight:600; }
+  .add-btn { font-size:12px; padding:6px 14px; border-radius:999px; background:var(--maroon); color:var(--cream); border:none; cursor:pointer; }
+  .wa-section { max-width:480px; margin:0 auto; padding:40px 20px; text-align:center; }
+  .wa-section p.title { font-family:'Cormorant Garamond',serif; font-size:24px; margin-bottom:8px; }
+  .wa-section p.desc { font-size:14px; opacity:.7; margin-bottom:16px; }
+  .wa-link { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:999px; background:var(--green); color:var(--cream); text-decoration:none; font-size:14px; }
+  .empty-msg { text-align:center; opacity:.6; font-size:14px; padding:40px 20px; grid-column:1/-1; }
+  .drawer-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:40; display:none; }
+  .drawer { position:fixed; top:0; right:0; height:100%; width:100%; max-width:380px; background:#fff; border-left:1px solid var(--gold); display:flex; flex-direction:column; z-index:41; transform:translateX(100%); transition:transform .25s; }
+  .drawer.open, .drawer-overlay.open { transform:none; display:block; }
+  .drawer-head { display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid #E8CD7A; }
+  .drawer-head h3 { font-family:'Cormorant Garamond',serif; font-size:22px; margin:0; }
+  .drawer-body { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:16px; }
+  .cart-item { display:flex; gap:12px; }
+  .cart-item .swatch { width:64px; height:64px; border-radius:8px; flex-shrink:0; }
+  .qty-row { display:flex; align-items:center; gap:8px; margin-top:4px; }
+  .qty-btn { border:1px solid var(--gold); background:none; border-radius:4px; width:22px; height:22px; cursor:pointer; }
+  .drawer-foot { padding:16px; border-top:1px solid #E8CD7A; }
+  .subtotal-row { display:flex; justify-content:space-between; font-size:14px; margin-bottom:12px; }
+  .btn-primary { width:100%; padding:12px; border-radius:999px; background:var(--maroon); color:var(--cream); border:none; font-size:14px; cursor:pointer; }
+  .btn-primary:disabled { opacity:.4; }
+  .view { display:none; max-width:520px; margin:0 auto; padding:40px 20px; }
+  .view.active { display:block; }
+  .back-link { background:none; border:none; opacity:.6; font-size:14px; cursor:pointer; margin-bottom:16px; padding:0; }
+  .view h2 { font-family:'Cormorant Garamond',serif; font-size:30px; margin:0 0 24px; }
+  .summary-box { border:1px solid var(--gold); border-radius:8px; padding:16px; background:#fff; margin-bottom:24px; }
+  .summary-row { display:flex; justify-content:space-between; font-size:14px; padding:4px 0; }
+  .summary-total { display:flex; justify-content:space-between; font-weight:600; padding-top:8px; margin-top:8px; border-top:1px solid #E8CD7A; }
+  input, textarea, select { border:1px solid var(--gold); border-radius:6px; padding:10px 12px; font-size:14px; background:#fff; width:100%; font-family:inherit; }
+  .field-stack { display:flex; flex-direction:column; gap:12px; }
+  .pay-row { display:flex; gap:8px; }
+  .pay-btn { padding:6px 14px; border-radius:999px; font-size:12px; background:none; border:1px solid var(--gold); color:var(--maroon); cursor:pointer; }
+  .pay-btn.active { background:var(--maroon); color:var(--cream); border-color:var(--maroon); }
+  .err { color:var(--error); font-size:12px; text-align:center; }
+  .center-note { font-size:11px; opacity:.5; text-align:center; margin-top:8px; }
+  .confirm-icon { width:56px; height:56px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:#fff; font-size:26px; }
+  .link-underline { color:var(--maroon); background:none; border:none; text-decoration:underline; cursor:pointer; font-size:14px; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:50; display:none; align-items:center; justify-content:center; padding:16px; }
+  .modal-overlay.open { display:flex; }
+  .modal { width:100%; max-width:400px; background:#fff; border-radius:10px; padding:20px; border:1px solid var(--gold); max-height:90vh; overflow-y:auto; }
+  .modal h3 { font-family:'Cormorant Garamond',serif; font-size:24px; margin:0 0 16px; }
+  .btn-outline { flex:1; padding:10px; border-radius:999px; background:none; border:1px solid var(--gold); cursor:pointer; font-size:14px; }
+  .admin-list-item { display:flex; align-items:center; gap:12px; border:1px solid var(--gold); border-radius:8px; padding:8px; background:#fff; margin-bottom:8px; }
+  .admin-list-item .swatch { width:48px; height:48px; border-radius:6px; flex-shrink:0; }
+  .admin-list-info { flex:1; min-width:0; }
+  .admin-list-info p { margin:0; font-size:14px; }
+  .admin-list-info p.sub { font-size:12px; opacity:.6; }
+  .icon-btn { background:none; border:none; cursor:pointer; padding:6px; }
+  .tabs { display:flex; gap:8px; margin-bottom:16px; }
+  .tab-btn { padding:6px 16px; border-radius:999px; font-size:14px; cursor:pointer; background:none; border:1px solid var(--gold); }
+  .tab-btn.active { background:var(--maroon); color:var(--cream); border-color:var(--maroon); }
+  .logout-link { display:flex; align-items:center; gap:4px; background:none; border:none; opacity:.7; font-size:14px; cursor:pointer; }
+  .loading-msg { text-align:center; padding:60px 20px; opacity:.6; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <button class="brand-btn font-brand" id="brandBtn">Husn-e-Kashmir</button>
+    <button class="cart-btn" id="cartOpenBtn">
+      🛍️ Cart <span class="cart-badge" id="cartBadge" style="display:none;">0</span>
+    </button>
+  </div>
+</header>
+
+<div id="storeView">
+  <section class="hero">
+    <p class="eyebrow">PASHMINA DRAPER, KASHMIR</p>
+    <h1 class="font-display">Pashmina Draper</h1>
+    <p class="desc">Pashmina sarees, hand-embroidered shawls and stoles, alongside Banarasi, Kanjivaram, chiffon and cotton sarees — each piece chosen for its weave.</p>
+  </section>
+  <div class="divider"></div>
+  <div class="categories" id="categoryRow"></div>
+  <section class="grid" id="productGrid">
+    <div class="empty-msg">Loading…</div>
+  </section>
+  <div class="divider"></div>
+  <section class="wa-section">
+    <p class="title font-display">Prefer to order on a call?</p>
+    <p class="desc">Message us on WhatsApp with the saree name and we'll confirm availability directly.</p>
+    <a class="wa-link" id="waChatLink" target="_blank" rel="noreferrer">💬 Chat on WhatsApp</a>
+  </section>
+</div>
+
+<div class="view" id="checkoutView">
+  <button class="back-link" id="checkoutBack">&larr; Back to store</button>
+  <h2 class="font-display">Checkout</h2>
+  <div class="summary-box" id="checkoutSummary"></div>
+  <div class="field-stack">
+    <input id="cfName" placeholder="Full name" />
+    <input id="cfPhone" placeholder="Phone number" />
+    <textarea id="cfAddress" placeholder="Delivery address" rows="2"></textarea>
+    <input id="cfPincode" placeholder="Pincode" />
+    <p style="font-size:12px;opacity:.6;margin:8px 0 0;">Payment method</p>
+    <div class="pay-row" id="payRow">
+      <button class="pay-btn active" data-pay="upi">UPI</button>
+      <button class="pay-btn" data-pay="card">Card</button>
+    </div>
+    <button class="btn-primary" id="placeOrderBtn" style="margin-top:8px;">Place order</button>
+    <p class="err" id="checkoutErr"></p>
+  </div>
+</div>
+
+<div class="view" id="confirmView">
+  <div class="confirm-icon">✓</div>
+  <h2 class="font-display" style="text-align:center;">Order received</h2>
+  <p style="text-align:center;opacity:.7;font-size:14px;" id="orderIdText"></p>
+  <div class="summary-box" id="confirmSummary"></div>
+  <div style="text-align:center;">
+    <a class="wa-link" id="waConfirmLink" target="_blank" rel="noreferrer" style="margin-bottom:12px;">💬 Confirm via WhatsApp</a>
+    <p style="font-size:12px;opacity:.6;margin:12px 0;">Sending this confirms your order with us directly, since live payment isn't connected yet.</p>
+    <button class="link-underline" id="continueShoppingBtn">Continue shopping</button>
+  </div>
+</div>
+
+<div class="view" id="adminLoginView">
+  <button class="back-link" id="adminLoginBack">&larr; Back to store</button>
+  <h2 class="font-display" style="text-align:center;">Admin login</h2>
+  <div class="field-stack">
+    <input type="password" id="adminPassInput" placeholder="Password" />
+    <p class="err" id="adminLoginErr"></p>
+    <button class="btn-primary" id="adminLoginBtn">Login</button>
+  </div>
+</div>
+
+<div class="view" id="adminPanelView">
+  <button class="back-link" id="adminPanelBack" style="margin-bottom:8px;">&larr; Back to store</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+    <h2 class="font-display" style="margin:0;">Admin panel</h2>
+    <button class="logout-link" id="adminLogoutBtn">⎋ Logout</button>
+  </div>
+  <div id="adminList"></div>
+  <button class="btn-primary" id="addProductBtn" style="background:var(--green);margin-top:8px;">+ Add new saree</button>
+</div>
+
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="cartDrawer">
+  <div class="drawer-head">
+    <h3 class="font-display">Your cart</h3>
+    <button class="icon-btn" id="cartCloseBtn">✕</button>
+  </div>
+  <div class="drawer-body" id="cartItemsBody"></div>
+  <div class="drawer-foot" id="cartFoot" style="display:none;">
+    <div class="subtotal-row"><span>Subtotal</span><span id="cartSubtotal" style="font-weight:600;"></span></div>
+    <button class="btn-primary" id="goCheckoutBtn">Checkout →</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="productModalOverlay">
+  <div class="modal">
+    <h3 id="productModalTitle">New saree</h3>
+    <div class="field-stack">
+      <input id="pfName" placeholder="Name" />
+      <select id="pfCategory"></select>
+      <input id="pfFabric" placeholder="Fabric (e.g. Pure Silk)" />
+      <p style="font-size:12px;opacity:.6;margin:6px 0 -6px;">Saree photo</p>
+      <input type="file" id="pfImageFile" accept="image/*" />
+      <img id="pfImagePreview" style="display:none;width:100%;height:130px;object-fit:contain;background:#f2e7d6;border-radius:6px;border:1px solid var(--gold);" />
+      <p style="font-size:12px;opacity:.6;margin:6px 0 -6px;">Blouse photo</p>
+      <input type="file" id="pfImage2File" accept="image/*" />
+      <img id="pfImage2Preview" style="display:none;width:100%;height:130px;object-fit:contain;background:#f2e7d6;border-radius:6px;border:1px solid var(--gold);" />
+      <p style="font-size:12px;opacity:.6;margin:6px 0 -6px;">Pallu photo</p>
+      <input type="file" id="pfImage3File" accept="image/*" />
+      <img id="pfImage3Preview" style="display:none;width:100%;height:130px;object-fit:contain;background:#f2e7d6;border-radius:6px;border:1px solid var(--gold);" />
+      <input type="number" id="pfPrice" placeholder="Price (₹)" />
+      <p class="err" id="productFormErr"></p>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn-outline" id="pfCancelBtn">Cancel</button>
+        <button class="btn-primary" id="pfSaveBtn" style="flex:1;">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== CONFIG — edit these if needed ======
+const SUPABASE_URL = "https://lbbvpdzaucvehkbfnoka.supabase.co";
+const SUPABASE_KEY = "sb_publishable_iqrFAPK-nTYQAlKkuJwNYA_ZR6TqM7M";
+const OWNER_WHATSAPP = "919555562344";
+const ADMIN_PASSWORD = "arshekashmir08";
+const CATEGORIES = ["Pashmina","Kani","Sozni","Tilla","Aari","Jamawar","Kashida","Shawls","Stoles"];
+// ============================================
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let products = [];
+let cart = JSON.parse(localStorage.getItem("hk_cart") || "[]");
+let activeCategory = "All";
+let editingProduct = null;
+let lastOrder = null;
+let paymentMethod = "upi";
+
+const $ = (id) => document.getElementById(id);
+const formatINR = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+const escapeHtml = (s) => (s || "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function saveCart() { localStorage.setItem("hk_cart", JSON.stringify(cart)); renderCart(); }
+
+function swatchHTML(p, cls, showDots) {
+  const images = [p.image, p.image2, p.image3].filter(Boolean);
+  if (images.length > 0) {
+    const dots = showDots && images.length > 1 ? `<div class="swatch-dots">${images.map((_,i)=>`<span class="swatch-dot${i===0?' active':''}"></span>`).join("")}</div>` : "";
+    return `<div class="swatch ${cls}" data-images='${escapeHtml(JSON.stringify(images))}' data-idx="0" onclick="cycleSwatch(this, event)"><img src="${images[0]}" alt=""/>${dots}</div>`;
+  }
+  const c1 = p.color1 || "#6B1426", c2 = p.color2 || "#C9A227";
+  return `<div class="swatch ${cls}" style="background:linear-gradient(135deg, ${c1} 0%, ${c1} 55%, ${c2} 55%, ${c2} 100%);"></div>`;
+}
+function cycleSwatch(el, e) {
+  e.stopPropagation();
+  const images = JSON.parse(el.dataset.images);
+  let idx = (parseInt(el.dataset.idx) + 1) % images.length;
+  el.dataset.idx = idx;
+  el.querySelector("img").src = images[idx];
+  el.querySelectorAll(".swatch-dot").forEach((d,i) => d.classList.toggle("active", i === idx));
+}
+
+// ---------- Load products ----------
+async function loadProducts() {
+  const { data, error } = await sb.from("products").select("*").order("id", { ascending: true });
+  if (error) {
+    $("productGrid").innerHTML = `<div class="empty-msg">Couldn't load products.<br/><span style="font-size:11px;opacity:.7;">${escapeHtml(error.message || JSON.stringify(error))}</span><br/><button class="link-underline" onclick="loadProducts()" style="margin-top:8px;">Try again</button></div>`;
+    return;
+  }
+  products = data || [];
+  renderCategories();
+  renderGrid();
+  if (adminMode) renderAdminList();
+}
+
+function renderCategories() {
+  const cats = ["All", ...CATEGORIES];
+  $("categoryRow").innerHTML = cats.map(c =>
+    `<button class="cat-btn ${activeCategory===c?'active':''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`
+  ).join("");
+  $("categoryRow").querySelectorAll(".cat-btn").forEach(btn => {
+    btn.onclick = () => { activeCategory = btn.dataset.cat; renderCategories(); renderGrid(); };
+  });
+}
+
+function renderGrid() {
+  const list = activeCategory === "All" ? products : products.filter(p => p.category === activeCategory);
+  if (list.length === 0) {
+    $("productGrid").innerHTML = `<div class="empty-msg">No sarees in this category yet.</div>`;
+    return;
+  }
+  $("productGrid").innerHTML = list.map(p => `
+    <div class="card">
+      ${swatchHTML(p, "", true)}
+        <div class="card-top">
+          <h3>${escapeHtml(p.name)}</h3>
+          <span class="rating">★ ${p.rating || "5.0"}</span>
+        </div>
+        <p class="meta">${escapeHtml(p.fabric || "")} · ${escapeHtml(p.category || "")}</p>
+        <div class="card-bottom">
+          <span class="price">${formatINR(p.price)}</span>
+          <button class="add-btn" data-id="${p.id}">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+  $("productGrid").querySelectorAll(".add-btn").forEach(btn => {
+    btn.onclick = () => addToCart(Number(btn.dataset.id));
+  });
+}
+
+// ---------- Cart ----------
+function addToCart(id) {
+  const existing = cart.find(c => c.id === id);
+  if (existing) existing.qty += 1; else cart.push({ id, qty: 1 });
+  saveCart();
+  openCart();
+}
+function changeQty(id, delta) {
+  cart = cart.map(c => c.id === id ? { ...c, qty: c.qty + delta } : c).filter(c => c.qty > 0);
+  saveCart();
+}
+function removeFromCart(id) { cart = cart.filter(c => c.id !== id); saveCart(); }
+
+function cartItemsWithProduct() {
+  return cart.map(c => ({ ...c, product: products.find(p => p.id === c.id) })).filter(c => c.product);
+}
+
+function renderCart() {
+  const items = cartItemsWithProduct();
+  const count = cart.reduce((s,c) => s + c.qty, 0);
+  $("cartBadge").style.display = count > 0 ? "flex" : "none";
+  $("cartBadge").textContent = count;
+
+  if (items.length === 0) {
+    $("cartItemsBody").innerHTML = `<p style="text-align:center;opacity:.6;margin-top:40px;">Your cart is empty.</p>`;
+    $("cartFoot").style.display = "none";
+    return;
+  }
+  $("cartItemsBody").innerHTML = items.map(c => `
+    <div class="cart-item">
+      ${swatchHTML(c.product, "")}
+      <div style="flex:1;">
+        <p style="margin:0;font-size:14px;font-weight:500;">${escapeHtml(c.product.name)}</p>
+        <p style="margin:0 0 4px;font-size:12px;opacity:.6;">${formatINR(c.product.price)}</p>
+        <div class="qty-row">
+          <button class="qty-btn" data-act="minus" data-id="${c.id}">−</button>
+          <span style="width:16px;text-align:center;font-size:14px;">${c.qty}</span>
+          <button class="qty-btn" data-act="plus" data-id="${c.id}">+</button>
+          <button class="link-underline" data-act="remove" data-id="${c.id}" style="font-size:12px;margin-left:8px;">remove</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+  $("cartItemsBody").querySelectorAll("[data-act]").forEach(btn => {
+    const id = Number(btn.dataset.id);
+    btn.onclick = () => {
+      if (btn.dataset.act === "plus") changeQty(id, 1);
+      else if (btn.dataset.act === "minus") changeQty(id, -1);
+      else removeFromCart(id);
+    };
+  });
+  const subtotal = items.reduce((s,c) => s + c.product.price * c.qty, 0);
+  $("cartSubtotal").textContent = formatINR(subtotal);
+  $("cartFoot").style.display = "block";
+}
+
+function openCart() {
+  $("cartDrawer").classList.add("open"); $("drawerOverlay").classList.add("open");
+  history.pushState({ view: "cart" }, "", "#cart");
+}
+function hideCartUI() {
+  $("cartDrawer").classList.remove("open"); $("drawerOverlay").classList.remove("open");
+}
+function closeCart(fromHistory) {
+  hideCartUI();
+  if (!fromHistory && history.state && history.state.view === "cart") history.back();
+}
+
+// ---------- Views ----------
+const VIEW_HASH = { storeView: "", checkoutView: "checkout", confirmView: "order-confirmed", adminLoginView: "admin", adminPanelView: "admin" };
+
+function showView(id, fromHistory) {
+  ["storeView","checkoutView","confirmView","adminLoginView","adminPanelView"].forEach(v => {
+    const el = $(v);
+    if (v === "storeView") el.style.display = (v === id) ? "block" : "none";
+    else el.classList.toggle("active", v === id);
+  });
+  window.scrollTo(0,0);
+  if (!fromHistory) {
+    const hash = VIEW_HASH[id] || "";
+    const url = hash ? "#" + hash : location.pathname + location.search;
+    if (id === "storeView") history.replaceState({ view: id }, "", url);
+    else history.pushState({ view: id }, "", url);
+  }
+}
+window.addEventListener("popstate", (e) => {
+  const view = (e.state && e.state.view) || "storeView";
+  if (view === "cart") {
+    showView("storeView", true);
+    $("cartDrawer").classList.add("open"); $("drawerOverlay").classList.add("open");
+    return;
+  }
+  closeCart(true);
+  showView(view, true);
+});
+
+// ---------- Checkout ----------
+function goCheckout() {
+  const items = cartItemsWithProduct();
+  const subtotal = items.reduce((s,c) => s + c.product.price * c.qty, 0);
+  $("checkoutSummary").innerHTML = items.map(c =>
+    `<div class="summary-row"><span>${c.qty} × ${escapeHtml(c.product.name)}</span><span>${formatINR(c.product.price*c.qty)}</span></div>`
+  ).join("") + `<div class="summary-total"><span>Total</span><span>${formatINR(subtotal)}</span></div>`;
+  hideCartUI();
+  showView("checkoutView");
+}
+
+function placeOrder() {
+  const name = $("cfName").value.trim();
+  const phone = $("cfPhone").value.trim();
+  const address = $("cfAddress").value.trim();
+  const pincode = $("cfPincode").value.trim();
+  if (!name || !phone || !address || !pincode) {
+    $("checkoutErr").textContent = "Please fill in all fields.";
+    return;
+  }
+  $("checkoutErr").textContent = "";
+  const items = cartItemsWithProduct();
+  const subtotal = items.reduce((s,c) => s + c.product.price * c.qty, 0);
+  const orderId = "HEK" + Math.floor(100000 + Math.random()*900000);
+  lastOrder = { id: orderId, items, total: subtotal, form: { name, phone, address, pincode, payment: paymentMethod } };
+
+  $("orderIdText").textContent = "Order ID: " + orderId;
+  $("confirmSummary").innerHTML = items.map(c =>
+    `<div class="summary-row"><span>${c.qty} × ${escapeHtml(c.product.name)}</span><span>${formatINR(c.product.price*c.qty)}</span></div>`
+  ).join("") + `<div class="summary-total"><span>Total</span><span>${formatINR(subtotal)}</span></div>`;
+
+  const lines = [
+    `Order ${orderId} - Husn-e-Kashmir`,
+    ...items.map(c => `${c.qty} x ${c.product.name} - ${formatINR(c.product.price*c.qty)}`),
+    `Total: ${formatINR(subtotal)}`,
+    `Name: ${name}`, `Phone: ${phone}`, `Address: ${address}, ${pincode}`
+  ];
+  $("waConfirmLink").href = `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(lines.join("\n"))}`;
+
+  cart = []; saveCart();
+  showView("confirmView");
+  window.open($("waConfirmLink").href, "_blank");
+}
+
+// ---------- Admin ----------
+let adminMode = localStorage.getItem("hek_admin") === "yes";
+let logoTapCount = 0;
+let logoTapTimer = null;
+
+function handleLogoTap() {
+  logoTapCount++;
+  clearTimeout(logoTapTimer);
+  if (logoTapCount >= 5) {
+    logoTapCount = 0;
+    if (adminMode) { renderAdminList(); showView("adminPanelView"); }
+    else showView("adminLoginView");
+    return;
+  }
+  showView("storeView");
+  logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 2000);
+}
+
+function adminLogin() {
+  const val = $("adminPassInput").value;
+  if (val === ADMIN_PASSWORD) {
+    adminMode = true;
+    localStorage.setItem("hek_admin", "yes");
+    $("adminPassInput").value = "";
+    $("adminLoginErr").textContent = "";
+    renderAdminList();
+    showView("adminPanelView");
+  } else {
+    $("adminLoginErr").textContent = "Incorrect password, try again.";
+  }
+}
+
+function renderAdminList() {
+  if (products.length === 0) {
+    $("adminList").innerHTML = `<p style="opacity:.6;font-size:14px;">No sarees yet.</p>`;
+    return;
+  }
+  $("adminList").innerHTML = products.map(p => `
+    <div class="admin-list-item">
+      ${swatchHTML(p, "")}
+      <div class="admin-list-info">
+        <p>${escapeHtml(p.name)}</p>
+        <p class="sub">${escapeHtml(p.category||"")} · ${formatINR(p.price)}</p>
+      </div>
+      <button class="icon-btn" data-act="edit" data-id="${p.id}">✏️</button>
+      <button class="icon-btn" data-act="delete" data-id="${p.id}">🗑️</button>
+    </div>
+  `).join("");
+  $("adminList").querySelectorAll("[data-act]").forEach(btn => {
+    const id = Number(btn.dataset.id);
+    btn.onclick = () => {
+      if (btn.dataset.act === "edit") openProductModal(products.find(p => p.id === id));
+      else deleteProduct(id);
+    };
+  });
+}
+
+async function deleteProduct(id) {
+  await sb.from("products").delete().eq("id", id);
+  await loadProducts();
+}
+
+function openProductModal(product) {
+  editingProduct = product ? { ...product } : { name:"", category:CATEGORIES[0], fabric:"", price:"", image:"", image2:"", image3:"", color1:"#6B1426", color2:"#C9A227" };
+  $("productModalTitle").textContent = product ? "Edit saree" : "New saree";
+  $("pfCategory").innerHTML = CATEGORIES.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  $("pfName").value = editingProduct.name || "";
+  $("pfCategory").value = editingProduct.category || CATEGORIES[0];
+  $("pfFabric").value = editingProduct.fabric || "";
+  $("pfPrice").value = editingProduct.price || "";
+  $("pfImageFile").value = ""; $("pfImage2File").value = ""; $("pfImage3File").value = "";
+  [["image","pfImagePreview"],["image2","pfImage2Preview"],["image3","pfImage3Preview"]].forEach(([key, id]) => {
+    if (editingProduct[key]) { $(id).src = editingProduct[key]; $(id).style.display = "block"; }
+    else { $(id).style.display = "none"; }
+  });
+  $("productFormErr").textContent = "";
+  $("productModalOverlay").classList.add("open");
+}
+function closeProductModal() { $("productModalOverlay").classList.remove("open"); editingProduct = null; }
+
+function compressImageFile(file, maxDim=700, quality=0.72) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("read failed"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("image load failed"));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim) { height = Math.round(height*maxDim/width); width = maxDim; }
+        else if (height > maxDim) { width = Math.round(width*maxDim/height); height = maxDim; }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function saveProductForm() {
+  const name = $("pfName").value.trim();
+  const category = $("pfCategory").value;
+  const fabric = $("pfFabric").value.trim();
+  const price = $("pfPrice").value;
+  if (!name || !fabric || price === "") { $("productFormErr").textContent = "Please fill in all fields."; return; }
+  $("productFormErr").textContent = "";
+
+  const payload = {
+    name, category, fabric, price: Number(price),
+    image: editingProduct.image || null,
+    image2: editingProduct.image2 || null,
+    image3: editingProduct.image3 || null,
+    color1: editingProduct.color1 || "#6B1426",
+    color2: editingProduct.color2 || "#C9A227",
+    rating: editingProduct.rating || 4.8
+  };
+
+  $("pfSaveBtn").textContent = "Saving..."; $("pfSaveBtn").disabled = true;
+  let error;
+  if (editingProduct.id) {
+    ({ error } = await sb.from("products").update(payload).eq("id", editingProduct.id));
+  } else {
+    ({ error } = await sb.from("products").insert(payload));
+  }
+  $("pfSaveBtn").textContent = "Save"; $("pfSaveBtn").disabled = false;
+
+  if (error) { $("productFormErr").textContent = "Save failed: " + (error.message || JSON.stringify(error)); return; }
+  closeProductModal();
+  await loadProducts();
+}
+
+// ---------- Wire up events ----------
+$("brandBtn").onclick = handleLogoTap;
+$("cartOpenBtn").onclick = openCart;
+$("cartCloseBtn").onclick = closeCart;
+$("drawerOverlay").onclick = closeCart;
+$("goCheckoutBtn").onclick = goCheckout;
+$("checkoutBack").onclick = () => showView("storeView");
+$("adminLoginBack").onclick = () => showView("storeView");
+$("adminPanelBack").onclick = () => showView("storeView");
+$("placeOrderBtn").onclick = placeOrder;
+$("continueShoppingBtn").onclick = () => showView("storeView");
+$("adminLoginBtn").onclick = adminLogin;
+$("adminPassInput").addEventListener("keydown", e => { if (e.key === "Enter") adminLogin(); });
+$("adminLogoutBtn").onclick = () => { adminMode = false; localStorage.removeItem("hek_admin"); showView("storeView"); };
+$("addProductBtn").onclick = () => openProductModal(null);
+$("pfCancelBtn").onclick = closeProductModal;
+$("pfSaveBtn").onclick = saveProductForm;
+$("pfImageFile").onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const dataUrl = await compressImageFile(file);
+    editingProduct.image = dataUrl;
+    $("pfImagePreview").src = dataUrl;
+    $("pfImagePreview").style.display = "block";
+  } catch (err) { $("productFormErr").textContent = "Couldn't load the photo, try again."; }
+};
+$("pfImage2File").onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const dataUrl = await compressImageFile(file);
+    editingProduct.image2 = dataUrl;
+    $("pfImage2Preview").src = dataUrl;
+    $("pfImage2Preview").style.display = "block";
+  } catch (err) { $("productFormErr").textContent = "Couldn't load the photo, try again."; }
+};
+$("pfImage3File").onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const dataUrl = await compressImageFile(file);
+    editingProduct.image3 = dataUrl;
+    $("pfImage3Preview").src = dataUrl;
+    $("pfImage3Preview").style.display = "block";
+  } catch (err) { $("productFormErr").textContent = "Couldn't load the photo, try again."; }
+};
+document.querySelectorAll(".pay-btn").forEach(btn => {
+  btn.onclick = () => {
+    paymentMethod = btn.dataset.pay;
+    document.querySelectorAll(".pay-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  };
+});
+
+$("waChatLink").href = `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent("Hi, I'd like to ask about a saree on your website.")}`;
+
+// ---------- Init ----------
+renderCart();
+loadProducts();
+(function restoreFromHash() {
+  const hash = location.hash.replace("#", "");
+  const match = Object.keys(VIEW_HASH).find(k => VIEW_HASH[k] === hash && hash !== "");
+  if (match === "adminPanelView" && !adminMode) return;
+  if (match) { history.replaceState({ view: match }, "", location.hash); showView(match, true); }
+})();
+</script>
+</body>
+</html>
